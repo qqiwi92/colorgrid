@@ -1,6 +1,6 @@
 #include <cmath>
+#include <cstdio>
 #include <iostream>
-
 
 void draw(
     int (*coloring_func)(int, int, double),
@@ -10,23 +10,34 @@ void draw(
 {
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      double freq = 0.2;
-      int r = std::sin(coloring_func(x, y, phase)) * 127 + 128;
-      int g = std::sin(coloring_func(x, y, phase) + 2) * 127 + 128;
-      int b = std::sin(coloring_func(x, y, phase) + 4) * 127 + 128;
+      double val = coloring_func(x, y, phase);
+      int r = std::sin(val) * 127 + 128;
+      int g = std::sin(val + 2) * 127 + 128;
+      int b = std::sin(val + 4) * 127 + 128;
       std::printf("\033[48;2;%d;%d;%dm  ", r, g, b);
     }
     std::printf("\033[0m\n");
   }
+
+  std::printf("\033[%zuA", height);
 }
 
 int main()
 {
   auto pattern = [](int x, int y, double phase) -> int {
-    return x + y + static_cast< int >(phase);
+    return (int)((double)(x ^ y) + phase);
   };
 
-  draw(pattern, 0.0);
+  double phase = 0;
+  std::printf("\033[?25l");
 
-  return 0;
+  while (true) {
+    draw(pattern, phase);
+    phase += 100;
+    std::fflush(stdout);
+
+    std::printf("\033[?25h");
+
+  }
+    return 0;
 }
