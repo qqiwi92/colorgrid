@@ -1,28 +1,32 @@
 #include <cmath>
 #include <iostream>
-#include <cstdio>
 
-void draw() {
-    const size_t width = 60, height = 30;
-    double frequency = 0.15; 
-    const double mPI = 3.14159265359;
-    
-    for (size_t i = 0; i < height; ++i) {
-        for (size_t j = 0; j < width; ++j) {
-            
-            size_t k = i + j;
-            int r = std::sin(frequency * k ) * 127 + 128;
-            int g = std::sin(frequency /2  *k + 2 * mPI/3) * 127 + 128;
-            int b = std::sin(frequency * k + 4 * mPI/3) * 127 + 128;
 
-            std::printf("\033[38;2;%d;%d;%dm█", r, g, b);
-        }
-        std::cout << "\n";
+void draw(
+    int (*coloring_func)(int, int, double),
+    double phase,
+    size_t width = 30,
+    size_t height = 20)
+{
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      double freq = 0.2;
+      int r = std::sin(coloring_func(x, y, phase)) * 127 + 128;
+      int g = std::sin(coloring_func(x, y, phase) + 2) * 127 + 128;
+      int b = std::sin(coloring_func(x, y, phase) + 4) * 127 + 128;
+      std::printf("\033[48;2;%d;%d;%dm  ", r, g, b);
     }
-
-    std::cout << "\033[0m" << std::endl;
+    std::printf("\033[0m\n");
+  }
 }
 
-int main() {
-  draw();
+int main()
+{
+  auto pattern = [](int x, int y, double phase) -> int {
+    return x + y + static_cast< int >(phase);
+  };
+
+  draw(pattern, 0.0);
+
+  return 0;
 }
